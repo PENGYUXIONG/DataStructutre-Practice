@@ -162,21 +162,148 @@ class linked_list:
 
         partition(init_low_node, init_high_node.next)
 
+    def check_circular(self):
+        cur_node = self.head
+
+        # in case the list is empty
+        if self.head is None:
+            return True
+
+        while cur_node is not None and cur_node.next != self.head:
+            cur_node = cur_node.next
+
+        # if there is an end for the linked_list
+        if cur_node is None:
+            return False
+        else:
+            return True
+
+    def insert_in_order(self, data):
+        cur_node = self.head
+        new_node = node(data)
+
+        if cur_node is None:
+            self.head = new_node
+            return
+
+        if data < cur_node.data:
+            self.head = new_node
+            new_node.next = cur_node
+            return
+
+        while cur_node is not None:
+
+            if cur_node.next is None:
+                cur_node.next = new_node
+                return
+
+            if cur_node.next.data < data:
+
+                cur_node = cur_node.next
+                continue
+
+            new_node.next = cur_node.next
+            cur_node.next = new_node
+            return
+
+    def merge_sort(self):
+        if self.head is None:
+            print('this is an empty node list')
+            return
+
+        if self.head.next is None:
+            print('only one node, no need to get merge sort working')
+            return self.head
+
+        # init two linked lists to assign two halves of the list
+        low_list = linked_list()
+        high_list = linked_list()
+
+        mid = self.get_middle()
+        cur_node = self.head
+
+        low_list.head = self.head
+        high_list.head = mid
+
+        while cur_node.next is not mid:
+            cur_node = cur_node.next
+        cur_node.next = None
+
+        low_node = low_list.merge_sort()
+        high_node = high_list.merge_sort()
+
+        self.head = self.merge(low_node, high_node)
+        return self.head
+
+    def get_middle(self):
+        slow = self.head
+        fast = self.head
+        while fast is not None and fast.next is not None:
+            slow = slow.next
+            fast = fast.next.next
+        return slow
+
+    def merge(self, low_node, high_node):
+        head_node = node(None)
+        cur_node = head_node
+
+        cur_low_node = low_node
+        cur_high_node = high_node
+
+        while cur_low_node is not None and cur_high_node is not None:
+            if cur_low_node.data < cur_high_node.data:
+                cur_node.next = cur_low_node
+                cur_node = cur_node.next
+                cur_low_node = cur_low_node.next
+            else:
+                cur_node.next = cur_high_node
+                cur_node = cur_node.next
+                cur_high_node = cur_high_node.next
+
+        if cur_low_node is not None:
+            cur_node.next = cur_low_node
+
+        elif cur_high_node is not None:
+            cur_node.next = cur_high_node
+
+        return head_node.next
+
+
+# sample_list = linked_list()
+# sample_list.append(0)
+# sample_list.append(2)
+# sample_list.insert(0, 3)
+# sample_list.remove_by_value(0)
+# sample_list.add_new_begin(9)
+# sample_list.remove_by_pos(2)
+# sample_list.reverse()
+#
+#
+# sample_list.append(10)
+# sample_list.append(0)
+# sample_list.append(5)
+# sample_list.append(4)
+# sample_list.append(7)
+# sample_list.append(20)
+# sample_list.append(0)
+# sample_list.quick_sort()
+# sample_list.display()
+# print(sample_list.check_circular())
+
+
+# sample_list = linked_list()
+# sample_list.insert_in_order(5)
+# sample_list.insert_in_order(1)
+# sample_list.insert_in_order(-1)
+# sample_list.insert_in_order(20)
+# sample_list.display()
 
 sample_list = linked_list()
-sample_list.append(0)
-sample_list.append(2)
-sample_list.insert(0, 3)
-sample_list.remove_by_value(0)
-sample_list.add_new_begin(9)
-sample_list.remove_by_pos(2)
-sample_list.reverse()
-
-
-sample_list.append(10)
-sample_list.append(0)
+sample_list.append(1)
+sample_list.append(-2)
+sample_list.append(3)
 sample_list.append(5)
-sample_list.append(4)
-sample_list.quick_sort()
+sample_list.append(13)
 sample_list.display()
-
+sample_list.merge_sort()
+sample_list.display()
