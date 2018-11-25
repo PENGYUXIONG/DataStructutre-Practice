@@ -295,9 +295,10 @@ class circular_linked_list:
 # sample_list.display()i
 
 sample_list = circular_linked_list()
-sample_list.append(1)
+sample_list.append(-4)
 sample_list.append(-2)
 sample_list.append(3)
 sample_list.append(5)
+sample_list.append(-7)
 sample_list.merge_sort()
 sample_list.display()
