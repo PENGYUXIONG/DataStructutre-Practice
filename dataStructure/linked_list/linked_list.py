@@ -126,13 +126,16 @@ class linked_list:
         return cur_node
 
     def quick_sort(self):
-        if self.Isempty():
+        if self.head is None:
             print("This is an empty node list")
             return
         # set the head of the node list to be the start node
         init_low_node = self.head
         # get the tail node
-        init_high_node = self.get_tail()
+        cur_node = self.head
+        while cur_node.next is not None:
+            cur_node = cur_node.next
+        init_high_node = cur_node
 
         # make sure that the node does exist
         def partition(low_node, high_node):
@@ -145,15 +148,10 @@ class linked_list:
             while cur_node is not high_node:
                 if cur_node.data < pivot_node.data:
                     # swap pivot node's next node's data with the smaller node
-                    temp = cur_node.data
-                    cur_node.data = pivot_node.next.data
-                    pivot_node.next.data = temp
+                    temp = pivot_node.next
+                    temp.data, cur_node.data = cur_node.data, temp.data
+                    pivot_node.data, temp.data = temp.data, pivot_node.data
 
-                    # move the data
-                    temp = pivot_node.data
-                    pivot_node.data = pivot_node.next.data
-                    pivot_node.next.data = temp
-                    # move the pivot to the right when find smaller node
                     pivot_node = pivot_node.next
 
                 cur_node = cur_node.next
@@ -269,7 +267,7 @@ class linked_list:
         return head_node.next
 
 
-# sample_list = linked_list()
+sample_list = linked_list()
 # sample_list.append(0)
 # sample_list.append(2)
 # sample_list.insert(0, 3)
