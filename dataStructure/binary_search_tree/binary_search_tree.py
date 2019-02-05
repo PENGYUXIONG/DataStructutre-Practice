@@ -145,6 +145,17 @@ class binary_search_tree:
                 path.append(right_node.data)
         return path
 
+    def inorder_traversal(self, cur_node):
+        if self.root is None:
+            print('empty tree')
+            return
+        elif cur_node is None:
+            return
+        else:
+            self.inorder_traversal(cur_node.left)
+            print(cur_node.data)
+            self.inorder_traversal(cur_node.right)
+
 
 new_tree = binary_search_tree()
 new_tree.add(1, new_tree.root)
@@ -195,3 +206,4 @@ print(new_tree.find_path(-3, -1, new_tree.root, []))
 print(new_tree.find_path(-1.5, -1, new_tree.root, []))
 print(new_tree.find_path(-2, 4, new_tree.root, []))
 print(new_tree.find_path(0, 2, new_tree.root, []))
+new_tree.inorder_traversal(new_tree.root)
