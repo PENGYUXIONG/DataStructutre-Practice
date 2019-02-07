@@ -3,7 +3,7 @@ class Node:
         self.data = data
         self.left = self.right = None
         # prevent duplicate node
-        self.count = None
+        self.count = 1
 
 
 class binary_search_tree:
@@ -36,6 +36,9 @@ class binary_search_tree:
         elif cur_node.data != data:
             cur_node.left = self.delete(data, cur_node.left)
             cur_node.right = self.delete(data, cur_node.right)
+            return cur_node
+        elif cur_node.data == data and cur_node.count > 1:
+            cur_node.count = cur_node.count - 1
             return cur_node
         else:
             if cur_node.left is None:
@@ -145,16 +148,17 @@ class binary_search_tree:
                 path.append(right_node.data)
         return path
 
-    def inorder_traversal(self, cur_node):
+    def inorder_traversal(self, cur_node, data_list = []):
         if self.root is None:
             print('empty tree')
             return
         elif cur_node is None:
             return
         else:
-            self.inorder_traversal(cur_node.left)
-            print(cur_node.data)
-            self.inorder_traversal(cur_node.right)
+            self.inorder_traversal(cur_node.left, data_list)
+            data_list.append(cur_node.data)
+            self.inorder_traversal(cur_node.right, data_list)
+        return data_list
 
 
 new_tree = binary_search_tree()
@@ -206,4 +210,10 @@ print(new_tree.find_path(-3, -1, new_tree.root, []))
 print(new_tree.find_path(-1.5, -1, new_tree.root, []))
 print(new_tree.find_path(-2, 4, new_tree.root, []))
 print(new_tree.find_path(0, 2, new_tree.root, []))
-new_tree.inorder_traversal(new_tree.root)
+print(new_tree.inorder_traversal(new_tree.root, []))
+new_tree.add(-1, new_tree.root)
+print(new_tree.root.left.count)
+print(new_tree.inorder_traversal(new_tree.root, []))
+new_tree.delete(-1, new_tree.root)
+print(new_tree.root.left.count)
+print(new_tree.inorder_traversal(new_tree.root, []))
