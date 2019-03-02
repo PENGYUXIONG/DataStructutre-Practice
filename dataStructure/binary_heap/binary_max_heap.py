@@ -24,7 +24,14 @@ class binary_max_heap:
 	def get_max(self):
 		print(self.heap[0])
 	def extract_max(self):
-	 	return self.heap.pop(0)
+		if len(self.heap) = 0:
+			print('empty heap, unable to pop')
+			return
+		result = self.heap[0]
+		del self.heap[0]
+		if self.heap:
+			self.max_heapify()
+		return result
 	def delete(self, i):
 		self.increase(i, float('inf'))
 		self.extract_max()
