@@ -138,6 +138,38 @@ class graph:
 			dest = distance[dest][0]
 		route.reverse()
 		return route
+	def bfs_find_shortest_path(self, start, dest):
+		visited = []
+		parent = dict()
+		route = []
+		queue = []
+		if not self.vertices.has_key(start):
+			print('start point not in graph')
+			return
+		if not self.vertices.has_key(dest):
+			print('dest point not in graph')
+			return
+		start_vertex = self.vertices[start]
+		parent[start] = [start, 0]
+		queue.append(start_vertex)
+		while queue:
+			cur_vertex = queue.pop()
+			visited.append(cur_vertex.id)
+			for neighbour in cur_vertex.neighbours:
+				cost = parent[cur_vertex.id][1] + cur_vertex.neighbours[neighbour]
+				if neighbour in visited and parent[neighbour][1] <= cost:
+					continue
+				new_vertex = self.vertices[neighbour]
+				parent[neighbour] = [cur_vertex.id, cost]
+				if neighbour == dest:
+					break
+				queue.append(new_vertex)
+		while dest is not start:
+			route.append(dest)
+			dest = parent[dest][0]
+		route.append(start)
+		route.reverse()
+		return route
 	def display(self):
 		for i in self.vertices:
 			print(self.vertices[i].id)
@@ -154,3 +186,4 @@ new_graph.display()
 print(new_graph.bfs(1))
 print(new_graph.dfs(1))
 print(new_graph.find_shortest_path(1,6))
+print(new_graph.bfs_find_shortest_path(1,7))
