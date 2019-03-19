@@ -88,29 +88,44 @@ class graph:
 		while queue:
 			vertex_id = queue.pop(0)
 			for i in self.vertices[vertex_id].neighbours:
-				if not visited.has_key(i):
+				if i not in visited:
 					queue.append(i)
 					visited[i] = True
 			route.add(vertex_id)
 		return route
 	# dfs traversal
 	def dfs(self, start, route = set(), visited = dict()):
-		if not self.vertices.has_key(start):
+		if start not in self.vertices:
 			print('start vertex is not in the graph')
 			return
 		start_vertex = self.vertices[start]
 		route.add(start)
 		visited[start] = True
 		for i in start_vertex.neighbours:
-			if not visited.has_key(i):
+			if i not in visited:
 				route = self.dfs(i, route, visited)
 		return route
+	# find cycles using dfs
+	def detect_cycles(self, cur):
+		def find_cycles(cur, visited = [], recur = dict(), cycle = 0):
+			cur_ver = self.vertices[cur]
+			visited.append(cur)
+			recur[cur] = True
+			for neighbour in cur_ver.neighbours:
+				if neighbour in recur:
+					cycle += 1
+					continue
+				visited, recur, cycle = find_cycles(neighbour, visited, recur, cycle)
+			del recur[cur]
+			return visited, recur, cycle
+		visited, recur, cycle = find_cycles(cur)
+		return cycle
 	# shortest path, dijkstra
 	def find_shortest_path(self, start, dest):
-		if not self.vertices.has_key(start):
+		if start not in self.vertices:
 			print('start point is not in the graph')
 			return
-		if not self.vertices.has_key(dest):
+		if dest not in self.vertices:
 			print('dest point is not in the graph')
 			return
 		distance = dict()
@@ -130,7 +145,7 @@ class graph:
 			cur_vertex = self.vertices[cur[0][1]]
 			for neighbour in cur_vertex.neighbours:
 				relax(cur[0][1], neighbour, cur_vertex.neighbours[neighbour])
-		if len(queue.heap) == 0 and not distance.has_key(dest):
+		if len(queue.heap) == 0 and dest not in distance:
 			return []
 		route.append(dest)
 		while dest != start:
@@ -143,10 +158,10 @@ class graph:
 		parent = dict()
 		route = []
 		queue = []
-		if not self.vertices.has_key(start):
+		if start not in self.vertices:
 			print('start point not in graph')
 			return
-		if not self.vertices.has_key(dest):
+		if dest not in self.vertices:
 			print('dest point not in graph')
 			return
 		start_vertex = self.vertices[start]
@@ -170,6 +185,123 @@ class graph:
 		route.append(start)
 		route.reverse()
 		return route
+	def dfs_find_shortest_path(self, start, dest):
+		route = []
+		visited, parent = self.inner_dfs(start, dest)
+		while dest is not start:
+			route.append(dest)
+			dest = parent[dest][0]
+		route.append(start)
+		route.reverse()
+		return route
+	def inner_dfs(self, start, dest, visited = [], parent = dict()):
+		start_vertex = self.vertices[start]
+		visited.append(start)
+		for neighbour in start_vertex.neighbours:
+			cost = None
+			if start not in parent:
+				cost = start_vertex.neighbours[neighbour]
+				parent[start] = [start, 0]
+			else:
+				cost = start_vertex.neighbours[neighbour] + parent[start][1]
+			if neighbour not in visited:
+				parent[neighbour] = [start, cost]
+			elif parent[neighbour][1] > cost:
+				parent[neighbour] = [start, cost]
+			else:
+				break
+			visited, parent = self.inner_dfs(neighbour, dest, visited, parent)
+		return visited, parent
+	# assume following the basic topological rule
+	def topological_sort(self):
+		def recur_sort(cur, visited, result):
+			visited.append(cur)
+			for neighbour in self.vertices[cur].neighbours:
+				if neighbour not in visited:
+					visited, result = recur_sort(neighbour, visited, result)
+			result.insert(0, cur)
+			return visited, result
+		visited = []
+		result = []
+		for vertex in self.vertices:
+			if vertex not in visited:
+				visited, result = recur_sort(vertex, visited, result)
+		return result
+	# direct acyclic graph shortest path
+	def dag_shortest_path(self, start, dest):
+		def topological_sort(start):
+			def loop(start, visited = [], result = []):
+				visited.append(start)
+				start_vertices = self.vertices[start]
+				for neighbour in start_vertices.neighbours:
+					if neighbour not in visited:
+						visited, result = loop(neighbour, visited, result)
+				result.insert(0, start)
+				return visited, result
+			visited, result = loop(start)
+			return result
+		def relax(cur, neighbour, cost, weight):
+			cur_ver = self.vertices[cur]
+			neighbour_ver = self.vertices[neighbour]
+			if neighbour not in weight:
+				weight[neighbour] = [cur, cost]
+			elif weight[neighbour][1] > cost:
+				weight[neighbour] = [cur, cost]
+			return weight
+		weight = dict()
+		weight[start] = [start, 0]
+		result = []
+		sorted_vertices = topological_sort(start)
+		for vertex in sorted_vertices:
+			cur = self.vertices[vertex]
+			for neighbour in cur.neighbours:
+				cost = cur.neighbours[neighbour] + weight[start][1]
+				weight = relax(vertex, neighbour, cost, weight)
+		while dest is not start:
+			result.insert(0, dest)
+			dest = weight[dest][0]
+		result.insert(0, start)
+		return result
+	# bellman-ford, did not build a edges container, so negative cycles will cause error
+	def general_find_shortest_path(self, start, dest):
+		weight = dict()
+		result = []
+		weight[start] = [start, 0]
+		cur = start
+		def return_edges(cur, edges = []):
+			for neighbour in self.vertices[cur].neighbours:
+				if [cur, neighbour, self.vertices[cur].neighbours[neighbour]] not in edges:
+					edges.append([cur, neighbour, self.vertices[cur].neighbours[neighbour]])
+					edges = return_edges(neighbour, edges)
+			return edges
+		def check_edges(cur,  weight):
+			is_neg_cycles = False
+			for neighbour in self.vertices[cur].neighbours:
+				cost = weight[cur][1] + self.vertices[cur].neighbours[neighbour]
+				if neighbour in weight and weight[neighbour][1] > cost:
+					print('detected negative cycles!!!')
+					return True
+				if neighbour == dest:
+					continue
+				is_neg_cycles = check_edges(neighbour, weight)
+			return is_neg_cycles
+		def relax(cur, neighbour, cost, weight):
+			if neighbour not in weight:
+				weight[neighbour] = [cur, cost]
+			elif weight[neighbour][1] > cost:
+				weight[neighbour] = [cur, cost]
+			return weight
+		edges = return_edges(cur)
+		for i in range(len(self.vertices)):
+			for edge in edges:
+				weight = relax(edge[0], edge[1], edge[2], weight)
+		if check_edges(cur, weight):
+			return
+		while dest is not start:
+			result.insert(0, dest)
+			dest = weight[dest][0]
+		result.insert(0, start)
+		return result
 	def display(self):
 		for i in self.vertices:
 			print(self.vertices[i].id)
@@ -179,6 +311,7 @@ new_graph = graph()
 new_graph.add_edge(1,2)
 new_graph.add_edge(2,6)
 new_graph.add_edge(2,7)
+new_graph.add_edge(7, 2)
 new_graph.add_edge(1,5)
 new_graph.add_edge(5,1)
 new_graph.add_edge(3,4,2)
@@ -187,3 +320,18 @@ print(new_graph.bfs(1))
 print(new_graph.dfs(1))
 print(new_graph.find_shortest_path(1,6))
 print(new_graph.bfs_find_shortest_path(1,7))
+print(new_graph.dfs_find_shortest_path(1, 7))
+print(new_graph.detect_cycles(1))
+
+second_graph = graph()
+second_graph.add_edge(5,0)
+second_graph.add_edge(5, 3, -2)
+second_graph.add_edge(5,2, 4)
+second_graph.add_edge(2,3, -10)
+second_graph.add_edge(3,2,-1)
+second_graph.add_edge(3,1)
+second_graph.add_edge(4, 1)
+second_graph.add_edge(4, 0)
+print(second_graph.topological_sort())
+#print(second_graph.dag_shortest_path(5, 3))
+print(second_graph.general_find_shortest_path(5, 3))

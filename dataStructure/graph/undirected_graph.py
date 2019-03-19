@@ -17,7 +17,6 @@ class graph:
 				self.edge.pop(i)
 				return
 		print('no such edge exist')
-				
 	def display(self):
 		print(self.vertices)
 		print(self.edge)
